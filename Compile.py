@@ -29,7 +29,7 @@ def compile():
          path+"\src\*.cpp",
          path+"\GetOutput.cpp", 
          "-o",
-          "GetOutput"
+          path+"\\build\\GetOutput" # !Windowsoo!
           ])
 
 if __name__ == "__main__":

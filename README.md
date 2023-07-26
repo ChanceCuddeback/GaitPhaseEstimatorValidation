@@ -13,6 +13,8 @@ Install GCC/G++ on your system and run Test.py to get the RMSE error of the gait
 
 ## Dependencies
 Python V3.8+
+    numpy
+    pandas
 GCC/G++
 
 # Installing dependencies
@@ -22,3 +24,6 @@ along [here](https://www.freecodecamp.org/news/how-to-install-c-and-cpp-compiler
 You also must have Python3.8+ and numpy. Install python3 by following along [here](https://phoenixnap.com/kb/how-to-install-python-3-windows#:~:text=How%20to%20Install%20Python%203%20on%20Windows%2010,Variables%20%28Optional%29%207%20Install%20virtualnv%20%28Optional%29%20See%20More.). Numpy can be installed
 trivially through pythons package manager pip, ie 
     $python3 -m pip install numpy
+
+# Improvements
+Any OS dependent code has been postpended by !WindowsGoo!

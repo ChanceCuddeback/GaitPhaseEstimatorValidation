@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
 
     static GaitPhaseEstimator gpe = GaitPhaseEstimator(5, 0.20, 0.1, 0.2);
 
+    
 
     return 0;
 }
