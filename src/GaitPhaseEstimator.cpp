@@ -19,7 +19,7 @@ GaitPhaseEstimator::GaitPhaseEstimator(int number_of_avg_steps, float valid_step
  */
 GaitPhaseEstimator::~GaitPhaseEstimator()
 {
-  delete[] _step_times;
+  //delete[] _step_times;
 }
 
 
