@@ -4,12 +4,12 @@ output of the GaitPhaseEstimator to the true gait phase. This checks for functio
 
 The GaitPhase Estimator uses mock Arduino functions and is compiled and tested with GetOutput.cpp. The code is 
 compiled by Compile.py and requires that your system has installed GCC. TrueGaitPhase.py generates the true true
-gait phases that are used for comparison. All of this code is incorporated into Test.py.
+gait phases that are used for comparison. All of this code is incorporated into Evaluate.py.
 
-Test.py will return the RMSE error of the gait phase estimator. 
+Evaluate.py will return the RMSE error of the gait phase estimator. 
 
 ## TLDR
-Install GCC/G++ on your system and run Test.py to get the RMSE error of the gait phase estimator under test.
+Install GCC/G++ on your system and run Evaluate.py to get the RMSE error of the gait phase estimator under test.
 
 ## Dependencies
 Python V3.8+
