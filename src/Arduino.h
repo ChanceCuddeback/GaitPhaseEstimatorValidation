@@ -7,7 +7,7 @@
  * @brief Initialize the mock Arduino functionality
  * 
  */
-void init();
+void arduino_init();
 
 /**
  * @brief Milliseconds since init was called

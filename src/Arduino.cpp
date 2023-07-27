@@ -4,7 +4,7 @@ using sysclock = std::chrono::system_clock;
 using ms = std::chrono::duration<double, std::milli>;
 static auto start_time = sysclock::now();
 
-void init()
+void arduino_init()
 {
     start_time = sysclock::now();
 }
