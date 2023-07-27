@@ -16,6 +16,8 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <functional>
+#include <format>
 #include <charconv>
 
 class CSVRow
@@ -93,7 +95,38 @@ class CSVRange
         CSVIterator end()   const {return CSVIterator{};}
 };
 
+template<class VecType>
+void save_map_as_csv(std::string fname, std::map<std::string, std::vector<VecType>> map)
+{
+    std::ofstream out_file;
+    out_file.open("output/"+fname+".csv");
+    for (auto pair : map)
+    {
+        std::string k = pair.first;
+        std::vector<VecType> v = pair.second;
+        // Save key
+        out_file << k << ",";
+        // Save vector
+        for (auto val : v)
+        {
+            std::vector<char> str;
+            std::format_to(std::back_inserter(str), "{}", val);
+            out_file << std::string(std::begin(str), std::end(str)) << ",";
+        }
+        out_file << "\n";
+    }
+}
 
+template <class VecType, class GPE>
+std::vector<VecType> test(std::vector<VecType> with_data, GPE gpe)
+{
+    std::vector<VecType> out;
+    for (auto val : with_data)
+    {
+        out.emplace_back(gpe.update_phase(val));
+    }
+    return out;
+}
 // ============================= App ===============================
 
 #include "src/Arduino.h"
@@ -104,7 +137,7 @@ int main(int argc, char* argv[])
 {
     // Handle Input
     std::string path = "data/1649109361258579.csv";
-    std::ifstream   file(path);
+    std::ifstream file(path);
 
     // Unpack the CSV into dict
     std::map<std::string, std::vector<float>> dict;
@@ -119,6 +152,7 @@ int main(int argc, char* argv[])
             auto [p, ec] = std::from_chars(str.data(), str.data() + str.size(), val);
             if (ec != std::errc())
             {
+                std::cout << "Err converting: " << str << " from chars\n";
                 continue;
             }
             data.emplace_back(val);
@@ -127,14 +161,26 @@ int main(int argc, char* argv[])
         std::swap(dict[key], data);
     }
     
-    
+    // Start the clock on millis
     arduino_init();
-    // Construct your GaitPhaseEstimator
-    static GaitPhaseEstimator gpe = GaitPhaseEstimator(5, 0.20, 0.1, 0.2);
 
-    // Which data do you need serialized
+    // Construct your GaitPhaseEstimator(s)
+    const float steps_to_average{5.0f};
+    const float valid_step_variance{0.2f};
+    const float lower_contact_thresh{0.1f};
+    const float upper_contact_thresh{0.2f};
+    static GaitPhaseEstimator lgpe = GaitPhaseEstimator(steps_to_average, valid_step_variance, lower_contact_thresh, upper_contact_thresh);
+    static GaitPhaseEstimator rgpe = GaitPhaseEstimator(steps_to_average, valid_step_variance, lower_contact_thresh, upper_contact_thresh);
 
+    // Test the estimator
+    std::vector<float> l_output = test(dict["LFsr"], lgpe);
+    std::vector<float> r_output = test(dict["RFsr"], rgpe);
 
+    // Pack into map
+    std::map<std::string, std::vector<float>> outmap = {{"LGaitPhase", l_output}, {"RGaitPhase", r_output}};
+    
+    // Save the output to a csv
+    save_map_as_csv("data", outmap);
 
     return 0;
 }

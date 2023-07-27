@@ -26,6 +26,7 @@ def compile():
     # Compile
     handle_run(
         ["g++",
+         "-std=c++20",
          path+"\src\*.cpp",
          path+"\GetOutput.cpp", 
          "-o",
