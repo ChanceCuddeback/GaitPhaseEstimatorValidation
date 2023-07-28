@@ -48,8 +48,8 @@ class GaitPhaseEstimator {
     bool _prev_state; /** Previous state of schmit trigger */
    
     float _lower_contact_threshold, _upper_contact_threshold; /** Ground contact thresholds for schmit trigger */
-    float _ground_strike_timestamp; /** Most recent ground strike time */
-    float _prev_step_time;
+    float _prev_step_count;
+    float _current_step_count;
 
     bool _schmitt_trigger(float value, bool is_high, float lower_threshold, float upper_threshold);
 };

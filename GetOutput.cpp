@@ -19,10 +19,6 @@
 #include <functional>
 #include <format>
 #include <charconv>
-#include <chrono>
-#include <thread>
-
-#define TEST_DELAY_MS 2 // Nanoseconds to wait until next update
 
 class CSVRow
 {
@@ -104,6 +100,8 @@ void save_map_as_csv(std::string fname, std::map<std::string, std::vector<VecTyp
 {
     std::ofstream out_file;
     out_file.open("output/"+fname+".csv");
+    // Write Header
+    // out_file << "Head,\n";
     for (auto pair : map)
     {
         std::string k = pair.first;
@@ -134,7 +132,6 @@ std::vector<VecType> test(std::vector<VecType> with_data, GPE gpe)
     {
         const VecType new_sample = gpe.update_phase(val);
         out.emplace_back(gpe.update_phase(val));
-        std::this_thread::sleep_for(std::chrono::milliseconds(TEST_DELAY_MS));
     }
     return out;
 }
@@ -146,7 +143,8 @@ std::vector<VecType> test(std::vector<VecType> with_data, GPE gpe)
 int main(int argc, char* argv[])
 {
     // Handle Input
-    std::string path = "data/1649109361258579.csv";
+    std::string path = argv[1];
+    std::cout << "Reading " + path + "\n";
     std::ifstream file(path);
 
     // Unpack the CSV into dict
