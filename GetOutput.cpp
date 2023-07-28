@@ -109,9 +109,13 @@ void save_map_as_csv(std::string fname, std::map<std::string, std::vector<VecTyp
         // Save vector
         for (auto val : v)
         {
-            std::vector<char> str;
-            std::format_to(std::back_inserter(str), "{}", val);
-            out_file << std::string(std::begin(str), std::end(str)) << ",";
+            if (val > 100 || val < -1)
+            {
+                std::cout << "Out of bounds\n";
+            }
+            std::string str;
+            std::format_to(std::back_inserter(str), "{},", val);
+            out_file << str;
         }
         out_file << "\n";
     }
@@ -131,7 +135,6 @@ std::vector<VecType> test(std::vector<VecType> with_data, GPE gpe)
 
 #include "src/Arduino.h"
 #include "src/GaitPhaseEstimator.h"
-
 
 int main(int argc, char* argv[])
 {
@@ -165,12 +168,10 @@ int main(int argc, char* argv[])
     arduino_init();
 
     // Construct your GaitPhaseEstimator(s)
-    const float steps_to_average{5.0f};
-    const float valid_step_variance{0.2f};
     const float lower_contact_thresh{0.1f};
     const float upper_contact_thresh{0.2f};
-    static GaitPhaseEstimator lgpe = GaitPhaseEstimator(steps_to_average, valid_step_variance, lower_contact_thresh, upper_contact_thresh);
-    static GaitPhaseEstimator rgpe = GaitPhaseEstimator(steps_to_average, valid_step_variance, lower_contact_thresh, upper_contact_thresh);
+    static GaitPhaseEstimator lgpe = GaitPhaseEstimator(lower_contact_thresh, upper_contact_thresh);
+    static GaitPhaseEstimator rgpe = GaitPhaseEstimator(lower_contact_thresh, upper_contact_thresh);
 
     // Test the estimator
     std::vector<float> l_output = test(dict["LFsr"], lgpe);
