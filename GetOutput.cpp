@@ -19,6 +19,10 @@
 #include <functional>
 #include <format>
 #include <charconv>
+#include <chrono>
+#include <thread>
+
+#define TEST_DELAY_MS 2 // Nanoseconds to wait until next update
 
 class CSVRow
 {
@@ -119,6 +123,7 @@ void save_map_as_csv(std::string fname, std::map<std::string, std::vector<VecTyp
         }
         out_file << "\n";
     }
+    out_file.close();
 }
 
 template <class VecType, class GPE>
@@ -127,7 +132,9 @@ std::vector<VecType> test(std::vector<VecType> with_data, GPE gpe)
     std::vector<VecType> out;
     for (auto val : with_data)
     {
+        const VecType new_sample = gpe.update_phase(val);
         out.emplace_back(gpe.update_phase(val));
+        std::this_thread::sleep_for(std::chrono::milliseconds(TEST_DELAY_MS));
     }
     return out;
 }
@@ -155,7 +162,6 @@ int main(int argc, char* argv[])
             auto [p, ec] = std::from_chars(str.data(), str.data() + str.size(), val);
             if (ec != std::errc())
             {
-                std::cout << "Err converting: " << str << " from chars\n";
                 continue;
             }
             data.emplace_back(val);

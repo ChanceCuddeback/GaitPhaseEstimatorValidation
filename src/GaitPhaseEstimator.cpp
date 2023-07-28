@@ -3,11 +3,11 @@
 
 GaitPhaseEstimator::GaitPhaseEstimator(float lower, float upper)
 {
-  _prev_step_time = 0;
-  _gait_phase = 0;
-  _prev_state = false;
-  _lower_contact_threshold = lower;
-  _upper_contact_threshold = upper;
+  this->_prev_step_time = millis();
+  this->_gait_phase = 0;
+  this->_prev_state = false;
+  this->_lower_contact_threshold = lower;
+  this->_upper_contact_threshold = upper;
 }
 
 /**
@@ -33,25 +33,29 @@ float GaitPhaseEstimator::update_phase(float norm_fsr)
 {
   // Check for ground contact
   const bool current_state = _schmitt_trigger(norm_fsr, this->_prev_state, this->_lower_contact_threshold, this->_upper_contact_threshold);
-  const bool rising_edge = current_state > this->_prev_state;
   // Rising edge represents ground strike
+  const bool rising_edge = current_state > this->_prev_state;
+  int now = millis();
   if (rising_edge) 
   {
     // Calculate the previous steps total step time
-    const int now = millis();
     this->_prev_step_time = now - this->_ground_strike_timestamp;
 
     // Reset ground strike timestamp
     this->_ground_strike_timestamp = now;
   }
 
+  // Calculate phase, saturate at 100% and 0%
+  float gait_phase = 0;
+  if (this->_prev_step_time != 0)
+  {
+    const float current_step_time = (now - this->_ground_strike_timestamp);
+    gait_phase = current_step_time / this->_prev_step_time * 100.0f;
+  }
+  this->_gait_phase = max(min(gait_phase, 100.0f), 0.0f);
+
   // Update previous state
   this->_prev_state = current_state;
-
-  // Calculate phase, saturate at 100%
-  int now = millis();
-  this->_gait_phase = min((millis() - this->_ground_strike_timestamp) / this->_prev_step_time * 100.0f, 100.0f);
-
   return this->_gait_phase;
 }
 
