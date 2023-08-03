@@ -18,7 +18,7 @@ def true_gait_phase(state_array, on_rising=True):
         sawtooth = np.array(list(range((locs[i+1])-(locs[i]))))
         sawtooth = np.divide(sawtooth, max(sawtooth))
         gait_phase = np.append(gait_phase, sawtooth)
-    return gait_phase
+    return gait_phase*100
 
 if __name__ == "__main__":
     from GetTrialDict import get_trial_dict

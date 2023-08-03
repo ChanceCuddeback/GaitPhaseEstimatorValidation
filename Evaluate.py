@@ -6,11 +6,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pathlib 
+import csv
+import math
 
 
 # TODO: Perfrom for all files in data and aggregate results
 data_path = "data\\1649109361258579.csv" # !WindowsGoo!
-plotting_window = [0.2, 0.8] # Starting percent to final percent
+plotting_window = [0.45, 0.55] # Starting percent to final percent
 
 # Compile the code 
 compile()
@@ -29,21 +31,46 @@ subprocess.run([abs_path+"\\build\\GetOutput.exe", abs_data_path]) # !WindowsGoo
 
 # Read estimated gait phase for both legs
 abs_output_path = abs_path + "\\output\\data.csv" # !WindowsGoo!
-est_phases = get_trial_dict(abs_output_path)
+# opening the CSV file
+est_phases = {}
+with open(abs_output_path, mode ='r')as file:
+   
+  # reading the CSV file
+  csvFile = csv.reader(file)
+ 
+  # displaying the contents of the CSV file
+  for lines in csvFile:
+        est_phases[lines[0]] = np.array(lines[1:-1]).astype(np.float64)
 
 # Compare
-# l_err = np.subtract(l_phase*100, est_phases["LGaitPhase"][0:len[l_phase]]) # TODO: Make this not... hacky
-r_err = np.subtract(r_phase*100, est_phases["RGaitPhase"][0:len(r_phase)])
+est_l_phase = est_phases["LGaitPhase"][1:-1]
+l_err = np.subtract(l_phase, est_l_phase) # TODO: Make this not... hacky
+est_r_phase = est_phases["RGaitPhase"][1:-1]
+r_err = np.subtract(r_phase, est_r_phase)
 
 # Plot
+window = range(
+    math.floor(plotting_window[0]*len(est_l_phase)), 
+    math.floor(plotting_window[1]*len(est_l_phase)))
 plt.subplot(2,1,1)
-# plt.plot(l_err)
-# plt.title("Left Error vs Time")
-# plt.xlabel("Time (counts)")
-# plt.ylabel("True - Estimated (%)")
-plt.subplot(2,1,2)
-plt.plot(r_err)
-plt.title("Right Error vs Time")
+plt.subplots_adjust(left=0.1,
+                    bottom=0.1,
+                    right=0.9,
+                    top=0.9,
+                    wspace=0.4,
+                    hspace=0.4)
+plt.plot(est_l_phase[window])
+plt.plot(l_phase[window])
+plt.title("Left Estimated and Optimal vs Time")
 plt.xlabel("Time (counts)")
-plt.ylabel("True - Estimated (%)")
+plt.ylabel("Percent")
+plt.legend(["Estimated", "Optimal"])
+plt.subplot(2,1,2)
+plt.plot(est_r_phase[window])
+plt.plot(r_phase[window])
+plt.title("Right Estimated and Optimal vs Time")
+plt.xlabel("Time (counts)")
+plt.ylabel("Percent")
+plt.legend(["Estimated", "Optimal"])
+
 plt.show()

@@ -8,7 +8,6 @@
  */
 
 // ============================= App ===============================
-// https://stackoverflow.com/questions/1120140/how-can-i-read-and-parse-csv-files-in-c
 #include <iterator>
 #include <iostream>
 #include <fstream>
@@ -19,84 +18,48 @@
 #include <functional>
 #include <format>
 #include <charconv>
+#include "src/CSVHelpers.h"
 
-class CSVRow
+/**
+ * @brief Unpack a csv file handle and return a std::map. Currently ignores csv cell to float conversion errors. 
+ * 
+ * @param file 
+ * @return std::map<std::string, std::vector<float>> 
+ */
+static std::map<std::string, std::vector<float>> unpack_file(std::istream& file)
 {
-    public:
-        std::string_view operator[](std::size_t index) const
+    std::map<std::string, std::vector<float>> dict;
+    for(auto& row: CSVRange(file))
+    {
+        std::string key = std::string(row[0]);
+        std::vector<float> data;
+        for (std::size_t i = 1; i < row.size(); i++)
         {
-            return std::string_view(&m_line[m_data[index] + 1], m_data[index + 1] -  (m_data[index] + 1));
-        }
-        std::size_t size() const
-        {
-            return m_data.size() - 1;
-        }
-        void readNextRow(std::istream& str)
-        {
-            std::getline(str, m_line);
-
-            m_data.clear();
-            m_data.emplace_back(-1);
-            std::string::size_type pos = 0;
-            while((pos = m_line.find(',', pos)) != std::string::npos)
+            const std::string str = std::string(row[i]);
+            float val{0.0f};
+            auto [p, ec] = std::from_chars(str.data(), str.data() + str.size(), val);
+            if (ec != std::errc())
             {
-                m_data.emplace_back(pos);
-                ++pos;
+                continue;
             }
-            // This checks for a trailing comma with no data after it.
-            pos   = m_line.size();
-            m_data.emplace_back(pos);
+            data.emplace_back(val);
         }
-    private:
-        std::string         m_line;
-        std::vector<int>    m_data;
-};
+        dict[key] = std::vector<float>();
+        std::swap(dict[key], data);
+    }
+    return dict;
+}
+    
 
-std::istream& operator>>(std::istream& str, CSVRow& data)
-{
-    data.readNextRow(str);
-    return str;
-}   
-
-class CSVIterator
-{   
-    public:
-        typedef std::input_iterator_tag     iterator_category;
-        typedef CSVRow                      value_type;
-        typedef std::size_t                 difference_type;
-        typedef CSVRow*                     pointer;
-        typedef CSVRow&                     reference;
-
-        CSVIterator(std::istream& str)  :m_str(str.good()?&str:nullptr) { ++(*this); }
-        CSVIterator()                   :m_str(nullptr) {}
-
-        // Pre Increment
-        CSVIterator& operator++()               {if (m_str) { if (!((*m_str) >> m_row)){m_str = nullptr;}}return *this;}
-        // Post increment
-        CSVIterator operator++(int)             {CSVIterator    tmp(*this);++(*this);return tmp;}
-        CSVRow const& operator*()   const       {return m_row;}
-        CSVRow const* operator->()  const       {return &m_row;}
-
-        bool operator==(CSVIterator const& rhs) {return ((this == &rhs) || ((this->m_str == nullptr) && (rhs.m_str == nullptr)));}
-        bool operator!=(CSVIterator const& rhs) {return !((*this) == rhs);}
-    private:
-        std::istream*       m_str;
-        CSVRow              m_row;
-};
-
-class CSVRange
-{
-    std::istream&   stream;
-    public:
-        CSVRange(std::istream& str)
-            : stream(str)
-        {}
-        CSVIterator begin() const {return CSVIterator{stream};}
-        CSVIterator end()   const {return CSVIterator{};}
-};
-
+/**
+ * @brief Saves a std::maps to a csv file, such that the keys are on the zero column and the the data is a row vector. 
+ * 
+ * @tparam VecType 
+ * @param fname Name of file path to save the data
+ * @param map Vector of maps
+ */
 template<class VecType>
-void save_map_as_csv(std::string fname, std::map<std::string, std::vector<VecType>> map)
+static void save_map_as_csv(std::string fname, std::map<std::string, std::vector<VecType>> map)
 {
     std::ofstream out_file;
     out_file.open("output/"+fname+".csv");
@@ -124,8 +87,18 @@ void save_map_as_csv(std::string fname, std::map<std::string, std::vector<VecTyp
     out_file.close();
 }
 
+/**
+ * @brief Test the Gait phase estimator by calling its float update_phase(float) method. This function serializes a vector and returns the 
+ * phase for each timestep.  
+ * 
+ * @tparam VecType 
+ * @tparam GPE 
+ * @param with_data 
+ * @param gpe 
+ * @return std::vector<VecType> 
+ */
 template <class VecType, class GPE>
-std::vector<VecType> test(std::vector<VecType> with_data, GPE gpe)
+static std::vector<VecType> test(std::vector<VecType> with_data, GPE gpe)
 {
     std::vector<VecType> out;
     for (auto val : with_data)
@@ -142,38 +115,21 @@ std::vector<VecType> test(std::vector<VecType> with_data, GPE gpe)
 
 int main(int argc, char* argv[])
 {
-    // Handle Input
+    // Handle Input 
+    // TODO: check input
     std::string path = argv[1];
     std::cout << "Reading " + path + "\n";
     std::ifstream file(path);
 
     // Unpack the CSV into dict
-    std::map<std::string, std::vector<float>> dict;
-    for(auto& row: CSVRange(file))
-    {
-        std::string key = std::string(row[0]);
-        std::vector<float> data;
-        for (std::size_t i = 1; i < row.size(); i++)
-        {
-            const std::string str = std::string(row[i]);
-            float val{0.0f};
-            auto [p, ec] = std::from_chars(str.data(), str.data() + str.size(), val);
-            if (ec != std::errc())
-            {
-                continue;
-            }
-            data.emplace_back(val);
-        }
-        dict[key] = std::vector<float>();
-        std::swap(dict[key], data);
-    }
+    std::map<std::string, std::vector<float>> dict = unpack_file(file);
     
     // Start the clock on millis
     arduino_init();
 
     // Construct your GaitPhaseEstimator(s)
-    const float lower_contact_thresh{0.1f};
-    const float upper_contact_thresh{0.2f};
+    const float lower_contact_thresh{0.2f};
+    const float upper_contact_thresh{0.3f};
     static GaitPhaseEstimator lgpe = GaitPhaseEstimator(lower_contact_thresh, upper_contact_thresh);
     static GaitPhaseEstimator rgpe = GaitPhaseEstimator(lower_contact_thresh, upper_contact_thresh);
 
@@ -182,10 +138,11 @@ int main(int argc, char* argv[])
     std::vector<float> r_output = test(dict["RFsr"], rgpe);
 
     // Pack into map
-    std::map<std::string, std::vector<float>> outmap = {{"LGaitPhase", l_output}, {"RGaitPhase", r_output}};
+    // std::map<std::string, std::vector<float>> outmap = {{"LGaitPhase", l_output}, {"RGaitPhase", r_output}};
     
-    // Save the output to a csv
-    save_map_as_csv("data", outmap);
+    // Save the output to a csv, pack the data into a map such that the keys will be data headers
+    save_map_as_csv("data", std::map<std::string, std::vector<float>>(
+        {{"LGaitPhase", l_output}, {"RGaitPhase", r_output}}));
 
     return 0;
 }
