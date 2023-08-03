@@ -118,7 +118,6 @@ int main(int argc, char* argv[])
     // Handle Input 
     // TODO: check input
     std::string path = argv[1];
-    std::cout << "Reading " + path + "\n";
     std::ifstream file(path);
 
     // Unpack the CSV into dict

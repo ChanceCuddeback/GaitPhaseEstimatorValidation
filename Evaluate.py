@@ -12,10 +12,10 @@ import math
 
 # TODO: Perfrom for all files in data and aggregate results
 data_path = "data\\1649109361258579.csv" # !WindowsGoo!
-plotting_window = [0.45, 0.55] # Starting percent to final percent
+plotting_window = [0.475, 0.575] # Starting percent to final percent
 
 # Compile the code 
-compile()
+abs_estimator_path = compile()
 
 # Pull in the data
 data = get_trial_dict(data_path)
@@ -26,8 +26,8 @@ r_phase = true_gait_phase(data["RState"])
 
 # Generate estimated gait phase for both legs
 abs_path = pathlib.Path().resolve().__str__()
-abs_data_path = abs_path + "\\" + data_path
-subprocess.run([abs_path+"\\build\\GetOutput.exe", abs_data_path]) # !WindowsGoo!
+abs_data_path = abs_path + "\\" + data_path # !WindowsGoo!
+subprocess.run([abs_estimator_path, abs_data_path]) # !WindowsGoo!
 
 # Read estimated gait phase for both legs
 abs_output_path = abs_path + "\\output\\data.csv" # !WindowsGoo!
@@ -61,16 +61,16 @@ plt.subplots_adjust(left=0.1,
                     hspace=0.4)
 plt.plot(est_l_phase[window])
 plt.plot(l_phase[window])
-plt.title("Left Estimated and Optimal vs Time")
+plt.title("Left Gait Phase vs Time")
 plt.xlabel("Time (counts)")
 plt.ylabel("Percent")
-plt.legend(["Estimated", "Optimal"])
+plt.legend(["Estimated", "Optimal"], loc = "upper left")
 plt.subplot(2,1,2)
 plt.plot(est_r_phase[window])
 plt.plot(r_phase[window])
-plt.title("Right Estimated and Optimal vs Time")
+plt.title("Right Gait Phase vs Time")
 plt.xlabel("Time (counts)")
 plt.ylabel("Percent")
-plt.legend(["Estimated", "Optimal"])
+plt.legend(["Estimated", "Optimal"], loc = "upper left")
 
 plt.show()

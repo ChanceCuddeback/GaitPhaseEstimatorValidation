@@ -35,15 +35,17 @@ def compile():
     # Check for g++
     handle_run(["g++", "--version"], should_supress=True)
     # Compile
+    abs_build_path = path+"\\build\\GetOutput" # !WindowsGoo!
+    executable_ext = ".exe" # !WindowsGoo!
     handle_run(
         ["g++",
          "-std=c++20",
-         path+"\src\*.h",
          path+"\src\*.cpp",
          path+"\GetOutput.cpp", 
          "-o",
-          path+"\\build\\GetOutput" # !WindowsGoo!
+          abs_build_path
           ], should_supress=True)
+    return abs_build_path+executable_ext
     
 
 if __name__ == "__main__":
