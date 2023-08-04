@@ -1,6 +1,4 @@
-from Compile import compile
-from GetTrialDict import get_trial_dict
-from TrueGaitPhase import true_gait_phase
+from Helpers import *
 import subprocess
 import numpy as np
 import pandas as pd

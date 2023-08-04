@@ -127,8 +127,8 @@ int main(int argc, char* argv[])
     arduino_init();
 
     // Construct your GaitPhaseEstimator(s)
-    const float lower_contact_thresh{0.2f};
-    const float upper_contact_thresh{0.3f};
+    const float lower_contact_thresh{0.05f};
+    const float upper_contact_thresh{0.15f};
     static GaitPhaseEstimator lgpe = GaitPhaseEstimator(lower_contact_thresh, upper_contact_thresh);
     static GaitPhaseEstimator rgpe = GaitPhaseEstimator(lower_contact_thresh, upper_contact_thresh);
 
